@@ -2,141 +2,202 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
   <title>CONCESSIONI IGEA S.p.A.</title>
 
   <style>
+    :root {
+      --header-height: 75px;
+      --header-color: #2c3e50;
+      --id-color: #f39c12;
+      --button-color: #e74c3c;
+    }
+
     html,
     body {
       width: 100%;
       height: 100%;
       margin: 0;
       overflow: hidden;
-      background: #111;
-      font-family: Arial, Helvetica, sans-serif;
+      background: #ffffff;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
 
     #mappa {
+      position: fixed;
+      inset: 0;
       width: 100%;
       height: 100%;
-      display: block;
       border: 0;
     }
 
-    .titolo {
+    .custom-header {
       position: fixed;
+      top: 0;
+      left: 0;
       z-index: 100;
-      top: 10px;
-      left: 12px;
-      padding: 13px 20px;
-      min-width: 300px;
-      color: #fff;
-      background: #202020;
-      border: 1px solid #4d4d4d;
-      border-radius: 7px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
-      font-size: 21px;
-      font-weight: 700;
-      line-height: 1.2;
-      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-sizing: border-box;
+      width: 100%;
+      height: var(--header-height);
+      padding: 0 15px;
+      color: #ffffff;
+      background: var(--header-color);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+      pointer-events: auto;
     }
 
-    .pin-selezionato {
+    .header-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      max-width: 75%;
+      line-height: 1.2;
+    }
+
+    .info-id,
+    .info-comune,
+    .info-localita {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .info-id {
+      color: var(--id-color);
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .info-comune {
+      color: #ffffff;
+      font-size: 16px;
+    }
+
+    .info-localita {
+      color: #ffffff;
+      opacity: 0.8;
+      font-size: 13px;
+      font-style: italic;
+    }
+
+    .close-btn {
+      flex: 0 0 auto;
+      padding: 8px 16px;
+      border: 0;
+      border-radius: 4px;
+      color: #ffffff;
+      background: var(--button-color);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .close-btn:hover {
+      background: #c0392b;
+    }
+
+    .center-pin {
       position: fixed;
-      z-index: 30;
-      left: 50%;
       top: 50%;
+      left: 50%;
+      z-index: 50;
+      width: 40px;
+      height: 40px;
+      transform: translate(-50%, -100%);
+      pointer-events: none;
+      filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.35));
+    }
+
+    .zoom-control {
+      position: fixed;
+      top: calc(var(--header-height) + 10px);
+      right: 15px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 9px;
+      border-radius: 7px;
+      color: #ffffff;
+      background: rgba(44, 62, 80, 0.96);
+      box-shadow: 0 2px 7px rgba(0, 0, 0, 0.4);
+      user-select: none;
+    }
+
+    .zoom-control button {
       width: 34px;
       height: 34px;
-      transform: translate(-50%, -100%);
-      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.55));
-      pointer-events: none;
+      padding: 0;
+      border: 0;
+      border-radius: 5px;
+      color: #2c3e50;
+      background: #ecf0f1;
+      cursor: pointer;
+      font-size: 23px;
+      font-weight: 700;
+      line-height: 34px;
+      text-align: center;
     }
 
-    .pin-selezionato::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 3px;
-      width: 28px;
-      height: 28px;
-      border: 3px solid #fff;
-      border-radius: 50% 50% 50% 0;
-      background: #e53935;
-      transform: rotate(-45deg);
+    .zoom-control button:hover {
+      background: #ffffff;
     }
 
-    .pin-selezionato::after {
-      content: "";
-      position: absolute;
-      top: 10px;
-      left: 13px;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #fff;
+    .zoom-control button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
 
-    .etichetta-id {
-      position: fixed;
-      z-index: 30;
-      top: calc(50% + 12px);
-      left: 50%;
-      max-width: calc(100vw - 36px);
-      padding: 5px 8px;
-      border-radius: 4px;
-      color: #fff;
-      background: rgba(30, 30, 30, 0.88);
+    .zoom-label {
+      min-width: 48px;
       font-size: 12px;
       font-weight: 700;
       text-align: center;
-      white-space: nowrap;
-      transform: translateX(-50%);
-      pointer-events: none;
     }
 
-    .comandi {
-      position: fixed;
-      z-index: 40;
-      top: 12px;
-      right: 12px;
-      display: flex;
-      gap: 8px;
-    }
-
-    .comandi button {
-      padding: 9px 11px;
-      border: 0;
-      border-radius: 6px;
-      color: #fff;
-      background: rgba(31, 31, 31, 0.92);
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .comandi button:hover {
-      background: #3d3d3d;
-    }
-
-    @media (max-width: 600px) {
-      .titolo {
-        top: 8px;
-        left: 8px;
-        min-width: 0;
-        padding: 10px 13px;
-        font-size: 16px;
+    @media (max-width: 768px) {
+      .custom-header {
+        padding: 0 10px;
       }
 
-      .comandi {
-        top: 8px;
-        right: 8px;
+      .header-info {
+        max-width: 100%;
       }
 
-      .comandi button {
-        padding: 8px 9px;
-        font-size: 12px;
+      .close-btn {
+        display: none;
+      }
+
+      .info-id {
+        font-size: 17px;
+      }
+
+      .info-comune {
+        font-size: 14px;
+      }
+
+      .info-localita {
+        font-size: 11px;
+      }
+
+      .zoom-control {
+        right: 10px;
+        gap: 6px;
+        padding: 4px 7px;
+      }
+
+      .zoom-control button {
+        width: 36px;
+        height: 36px;
+        font-size: 24px;
+        line-height: 36px;
       }
     }
   </style>
@@ -151,56 +212,141 @@
     referrerpolicy="strict-origin-when-cross-origin"
   ></iframe>
 
-  <div class="titolo">CONCESSIONI IGEA S.p.A.</div>
+  <header class="custom-header">
+    <div class="header-info">
+      <span id="displayId" class="info-id">ID: N/D</span>
+      <span id="displayComune" class="info-comune">Comune: N/D</span>
+      <span id="displayLocalita" class="info-localita">Località: N/D</span>
+    </div>
 
-  <div id="pinSelezionato" class="pin-selezionato" hidden></div>
-  <div id="etichettaId" class="etichetta-id" hidden></div>
+    <button id="closeButton" class="close-btn" type="button">
+      CHIUDI
+    </button>
+  </header>
 
-  <div class="comandi">
-    <button id="pulsantePin" type="button">Nascondi pin</button>
+  <div id="pinSelezionato" class="center-pin" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      fill="#DB4437"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
+      />
+    </svg>
+  </div>
+
+  <div class="zoom-control" aria-label="Controlli zoom mappa">
+    <button id="zoomOutButton" type="button" title="Riduci zoom">
+      −
+    </button>
+
+    <span id="zoomLabel" class="zoom-label">+4</span>
+
+    <button id="zoomInButton" type="button" title="Aumenta zoom">
+      +
+    </button>
   </div>
 
   <script>
-    const MID = "1bxno4JIrzoUtn1eHwdDXpsJCEUHvHi8";
+    const MY_MAPS_ID = "1bxno4JIrzoUtn1eHwdDXpsJCEUHvHi8";
+    const BASE_ZOOM = 14;
+    const MIN_ZOOM = 14;
+    const MAX_ZOOM = 21;
 
     const params = new URLSearchParams(window.location.search);
-    const coordinata = params.get("ll");
-    const idImmobile = params.get("id");
-    const zoom = params.get("z") || "19";
 
-    const urlMappa =
-      "https://www.google.com/maps/d/u/0/embed?mid=" +
-      encodeURIComponent(MID) +
-      (coordinata ? "&ll=" + encodeURIComponent(coordinata) : "") +
-      "&z=" + encodeURIComponent(zoom);
-
-    document.getElementById("mappa").src = urlMappa;
-
-    const pin = document.getElementById("pinSelezionato");
-    const etichetta = document.getElementById("etichettaId");
-    const pulsantePin = document.getElementById("pulsantePin");
-
-    if (coordinata) {
-      pin.hidden = false;
-      etichetta.hidden = false;
-
-      etichetta.textContent = idImmobile
-        ? "Immobile selezionato: " + idImmobile
-        : "Posizione dell'immobile selezionato";
-    } else {
-      pulsantePin.style.display = "none";
+    function parametro(nome, valorePredefinito = "") {
+      const valore = params.get(nome);
+      return valore !== null && valore !== "" ? valore : valorePredefinito;
     }
 
-    pulsantePin.addEventListener("click", function () {
-      const pinVisibile = !pin.hidden;
+    let lat = parametro("lat");
+    let lng = parametro("lng");
 
-      pin.hidden = pinVisibile;
-      etichetta.hidden = pinVisibile;
+    if (!lat || !lng) {
+      const ll = parametro("ll");
 
-      pulsantePin.textContent = pinVisibile
-        ? "Mostra pin"
-        : "Nascondi pin";
+      if (ll && ll.includes(",")) {
+        const coordinate = ll.split(",");
+        lat = coordinate[0].trim();
+        lng = coordinate[1].trim();
+      }
+    }
+
+    lat = lat || "39.511889";
+    lng = lng || "8.547901";
+
+    const id = parametro("id", "N/D");
+    const comune = parametro("comune", "Comune non disponibile");
+    const localita = parametro("localita", "");
+
+    let currentZoom = Number.parseInt(
+      parametro("zoom", parametro("z", "18")),
+      10
+    );
+
+    if (!Number.isFinite(currentZoom)) {
+      currentZoom = 18;
+    }
+
+    currentZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, currentZoom));
+
+    const iframe = document.getElementById("mappa");
+    const zoomLabel = document.getElementById("zoomLabel");
+    const zoomOutButton = document.getElementById("zoomOutButton");
+    const zoomInButton = document.getElementById("zoomInButton");
+
+    document.getElementById("displayId").textContent = "ID: " + id;
+    document.getElementById("displayComune").textContent = comune;
+
+    if (localita) {
+      document.getElementById("displayLocalita").textContent = localita;
+    } else {
+      document.getElementById("displayLocalita").style.display = "none";
+    }
+
+    function aggiornaMappa() {
+      const url =
+        "https://www.google.com/maps/d/u/0/embed?mid=" +
+        encodeURIComponent(MY_MAPS_ID) +
+        "&ll=" +
+        encodeURIComponent(lat + "," + lng) +
+        "&z=" +
+        encodeURIComponent(currentZoom);
+
+      iframe.src = url;
+
+      const relativo = currentZoom - BASE_ZOOM;
+      zoomLabel.textContent = relativo > 0 ? "+" + relativo : String(relativo);
+
+      zoomOutButton.disabled = currentZoom <= MIN_ZOOM;
+      zoomInButton.disabled = currentZoom >= MAX_ZOOM;
+    }
+
+    zoomInButton.addEventListener("click", function () {
+      if (currentZoom < MAX_ZOOM) {
+        currentZoom += 1;
+        aggiornaMappa();
+      }
     });
+
+    zoomOutButton.addEventListener("click", function () {
+      if (currentZoom > MIN_ZOOM) {
+        currentZoom -= 1;
+        aggiornaMappa();
+      }
+    });
+
+    document.getElementById("closeButton").addEventListener("click", function () {
+      window.close();
+
+      setTimeout(function () {
+        window.history.back();
+      }, 150);
+    });
+
+    aggiornaMappa();
   </script>
 </body>
 </html>
