@@ -52,14 +52,33 @@
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
     }
 
-    .info-id {
-      overflow: hidden;
+    .header-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
       max-width: 55vw;
+      line-height: 1.2;
+    }
+
+    .info-id,
+    .info-concessione {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .info-id {
       color: var(--id-color);
       font-size: 22px;
       font-weight: 700;
-      white-space: nowrap;
-      text-overflow: ellipsis;
+    }
+
+    .info-concessione {
+      margin-top: 3px;
+      color: #ffffff;
+      opacity: 0.92;
+      font-size: 14px;
+      font-style: italic;
     }
 
     .header-actions {
@@ -126,9 +145,17 @@
         padding: 0 10px;
       }
 
-      .info-id {
+      .header-info {
         max-width: 48vw;
+      }
+
+      .info-id {
         font-size: 18px;
+      }
+
+      .info-concessione {
+        margin-top: 2px;
+        font-size: 11px;
       }
 
       .header-actions {
@@ -157,7 +184,10 @@
   ></iframe>
 
   <header class="custom-header">
-    <span id="displayId" class="info-id">ID: N/D</span>
+    <div class="header-info">
+      <span id="displayId" class="info-id">ID: N/D</span>
+      <span id="displayConcessione" class="info-concessione"></span>
+    </div>
 
     <div class="header-actions">
       <button id="pinButton" class="header-btn pin-btn" type="button">
@@ -209,13 +239,22 @@
     lng = lng || "8.547901";
 
     const id = parametro("id", "N/D");
+    const concessione = parametro("concessione", "");
     const zoom = parametro("zoom", parametro("z", "18"));
 
     const iframe = document.getElementById("mappa");
     const pin = document.getElementById("pinSelezionato");
     const pinButton = document.getElementById("pinButton");
+    const displayId = document.getElementById("displayId");
+    const displayConcessione = document.getElementById("displayConcessione");
 
-    document.getElementById("displayId").textContent = "ID: " + id;
+    displayId.textContent = "ID: " + id;
+
+    if (concessione.trim() !== "") {
+      displayConcessione.textContent = "Concessione: " + concessione;
+    } else {
+      displayConcessione.style.display = "none";
+    }
 
     const urlMappa =
       "https://www.google.com/maps/d/u/0/embed?mid=" +
