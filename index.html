@@ -13,7 +13,7 @@
       --header-height: 75px;
       --header-color: #2c3e50;
       --id-color: #f39c12;
-      --pin-button-color: #34495e;
+      --navigation-button-color: #34495e;
       --close-button-color: #e74c3c;
     }
 
@@ -100,11 +100,11 @@
       white-space: nowrap;
     }
 
-    .pin-btn {
-      background: var(--pin-button-color);
+    .navigation-btn {
+      background: var(--navigation-button-color);
     }
 
-    .pin-btn:hover {
+    .navigation-btn:hover {
       background: #1f2c38;
     }
 
@@ -133,6 +133,21 @@
     }
 
     .center-pin.hidden {
+      display: none;
+    }
+
+    .glass-pane {
+      position: fixed;
+      top: var(--header-height);
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 60;
+      background: transparent;
+      pointer-events: auto;
+    }
+
+    .glass-pane.unlocked {
       display: none;
     }
 
@@ -190,11 +205,19 @@
     </div>
 
     <div class="header-actions">
-      <button id="pinButton" class="header-btn pin-btn" type="button">
-        NASCONDI PIN
+      <button
+        id="navigationButton"
+        class="header-btn navigation-btn"
+        type="button"
+      >
+        SBLOCCA NAVIGAZIONE
       </button>
 
-      <button id="closeButton" class="header-btn close-btn" type="button">
+      <button
+        id="closeButton"
+        class="header-btn close-btn"
+        type="button"
+      >
         CHIUDI
       </button>
     </div>
@@ -211,6 +234,12 @@
       />
     </svg>
   </div>
+
+  <div
+    id="glassPane"
+    class="glass-pane"
+    aria-label="Navigazione mappa bloccata"
+  ></div>
 
   <script>
     const MY_MAPS_ID = "1bxno4JIrzoUtn1eHwdDXpsJCEUHvHi8";
@@ -244,9 +273,12 @@
 
     const iframe = document.getElementById("mappa");
     const pin = document.getElementById("pinSelezionato");
-    const pinButton = document.getElementById("pinButton");
+    const glassPane = document.getElementById("glassPane");
+    const navigationButton = document.getElementById("navigationButton");
     const displayId = document.getElementById("displayId");
     const displayConcessione = document.getElementById("displayConcessione");
+
+    let navigazioneSbloccata = false;
 
     displayId.textContent = "ID: " + id;
 
@@ -256,22 +288,49 @@
       displayConcessione.style.display = "none";
     }
 
-    const urlMappa =
-      "https://www.google.com/maps/d/u/0/embed?mid=" +
-      encodeURIComponent(MY_MAPS_ID) +
-      "&ll=" +
-      encodeURIComponent(lat + "," + lng) +
-      "&z=" +
-      encodeURIComponent(zoom);
+    function creaUrlMappa() {
+      return (
+        "https://www.google.com/maps/d/u/0/embed?mid=" +
+        encodeURIComponent(MY_MAPS_ID) +
+        "&ll=" +
+        encodeURIComponent(lat + "," + lng) +
+        "&z=" +
+        encodeURIComponent(zoom)
+      );
+    }
 
-    iframe.src = urlMappa;
+    function tornaAllaPosizioneIniziale() {
+      iframe.src = creaUrlMappa();
+    }
 
-    pinButton.addEventListener("click", function () {
-      const pinNascosto = pin.classList.toggle("hidden");
+    tornaAllaPosizioneIniziale();
 
-      pinButton.textContent = pinNascosto
-        ? "MOSTRA PIN"
-        : "NASCONDI PIN";
+    navigationButton.addEventListener("click", function () {
+      navigazioneSbloccata = !navigazioneSbloccata;
+
+      if (navigazioneSbloccata) {
+        glassPane.classList.add("unlocked");
+        pin.classList.add("hidden");
+        navigationButton.textContent = "BLOCCA NAVIGAZIONE";
+        glassPane.setAttribute(
+          "aria-label",
+          "Navigazione mappa sbloccata"
+        );
+      } else {
+        /*
+         * Ricarica l'iframe sul punto originario:
+         * coordinate e zoom passati dall'Action AppSheet.
+         */
+        tornaAllaPosizioneIniziale();
+
+        glassPane.classList.remove("unlocked");
+        pin.classList.remove("hidden");
+        navigationButton.textContent = "SBLOCCA NAVIGAZIONE";
+        glassPane.setAttribute(
+          "aria-label",
+          "Navigazione mappa bloccata"
+        );
+      }
     });
 
     document.getElementById("closeButton").addEventListener("click", function () {
