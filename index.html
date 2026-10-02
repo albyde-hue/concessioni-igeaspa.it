@@ -186,12 +186,12 @@
 
     @media (max-width: 768px) {
       :root {
-        --header-height: 62px;
+        --header-height: 78px;
       }
 
       .custom-header {
-        align-items: center;
-        padding: 0 10px;
+        align-items: flex-start;
+        padding: 8px 10px;
       }
 
       .header-info {
@@ -202,19 +202,28 @@
       }
 
       .info-id {
-        font-size: 18px;
-      }
-
-      .info-concessione {
         overflow: hidden;
-        margin-top: 2px;
-        font-size: 11px;
+        font-size: 18px;
         white-space: nowrap;
         text-overflow: ellipsis;
       }
 
+      .info-concessione {
+        display: -webkit-box;
+        overflow: hidden;
+        margin-top: 3px;
+        font-size: 11px;
+        line-height: 1.15;
+        white-space: normal;
+        text-overflow: clip;
+        overflow-wrap: anywhere;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+
       .header-actions {
         flex: 0 0 auto;
+        align-self: center;
         gap: 0;
         margin-left: 4px;
       }
