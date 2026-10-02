@@ -13,7 +13,8 @@
       --header-height: 75px;
       --header-color: #2c3e50;
       --id-color: #f39c12;
-      --button-color: #e74c3c;
+      --pin-button-color: #34495e;
+      --close-button-color: #e74c3c;
     }
 
     html,
@@ -49,58 +50,55 @@
       color: #ffffff;
       background: var(--header-color);
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
-      pointer-events: auto;
     }
 
-    .header-info {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-      max-width: 75%;
-      line-height: 1.2;
-    }
-
-    .info-id,
-    .info-comune,
-    .info-localita {
+    .info-id {
       overflow: hidden;
+      max-width: 55vw;
+      color: var(--id-color);
+      font-size: 22px;
+      font-weight: 700;
       white-space: nowrap;
       text-overflow: ellipsis;
     }
 
-    .info-id {
-      color: var(--id-color);
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .info-comune {
-      color: #ffffff;
-      font-size: 16px;
-    }
-
-    .info-localita {
-      color: #ffffff;
-      opacity: 0.8;
-      font-size: 13px;
-      font-style: italic;
-    }
-
-    .close-btn {
+    .header-actions {
+      display: flex;
       flex: 0 0 auto;
-      padding: 8px 16px;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-btn {
+      padding: 9px 15px;
       border: 0;
       border-radius: 4px;
       color: #ffffff;
-      background: var(--button-color);
       cursor: pointer;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
       text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .pin-btn {
+      background: var(--pin-button-color);
+    }
+
+    .pin-btn:hover {
+      background: #1f2c38;
+    }
+
+    .close-btn {
+      background: var(--close-button-color);
     }
 
     .close-btn:hover {
       background: #c0392b;
+    }
+
+    .header-btn:active {
+      transform: translateY(1px);
     }
 
     .center-pin {
@@ -115,89 +113,35 @@
       filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.35));
     }
 
-    .zoom-control {
-      position: fixed;
-      top: calc(var(--header-height) + 10px);
-      right: 15px;
-      z-index: 100;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px 9px;
-      border-radius: 7px;
-      color: #ffffff;
-      background: rgba(44, 62, 80, 0.96);
-      box-shadow: 0 2px 7px rgba(0, 0, 0, 0.4);
-      user-select: none;
-    }
-
-    .zoom-control button {
-      width: 34px;
-      height: 34px;
-      padding: 0;
-      border: 0;
-      border-radius: 5px;
-      color: #2c3e50;
-      background: #ecf0f1;
-      cursor: pointer;
-      font-size: 23px;
-      font-weight: 700;
-      line-height: 34px;
-      text-align: center;
-    }
-
-    .zoom-control button:hover {
-      background: #ffffff;
-    }
-
-    .zoom-control button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .zoom-label {
-      min-width: 48px;
-      font-size: 12px;
-      font-weight: 700;
-      text-align: center;
+    .center-pin.hidden {
+      display: none;
     }
 
     @media (max-width: 768px) {
+      :root {
+        --header-height: 62px;
+      }
+
       .custom-header {
         padding: 0 10px;
       }
 
-      .header-info {
-        max-width: 100%;
+      .info-id {
+        max-width: 48vw;
+        font-size: 18px;
+      }
+
+      .header-actions {
+        gap: 6px;
+      }
+
+      .header-btn {
+        padding: 8px 9px;
+        font-size: 11px;
       }
 
       .close-btn {
         display: none;
-      }
-
-      .info-id {
-        font-size: 17px;
-      }
-
-      .info-comune {
-        font-size: 14px;
-      }
-
-      .info-localita {
-        font-size: 11px;
-      }
-
-      .zoom-control {
-        right: 10px;
-        gap: 6px;
-        padding: 4px 7px;
-      }
-
-      .zoom-control button {
-        width: 36px;
-        height: 36px;
-        font-size: 24px;
-        line-height: 36px;
       }
     }
   </style>
@@ -213,15 +157,17 @@
   ></iframe>
 
   <header class="custom-header">
-    <div class="header-info">
-      <span id="displayId" class="info-id">ID: N/D</span>
-      <span id="displayComune" class="info-comune">Comune: N/D</span>
-      <span id="displayLocalita" class="info-localita">Località: N/D</span>
-    </div>
+    <span id="displayId" class="info-id">ID: N/D</span>
 
-    <button id="closeButton" class="close-btn" type="button">
-      CHIUDI
-    </button>
+    <div class="header-actions">
+      <button id="pinButton" class="header-btn pin-btn" type="button">
+        NASCONDI PIN
+      </button>
+
+      <button id="closeButton" class="header-btn close-btn" type="button">
+        CHIUDI
+      </button>
+    </div>
   </header>
 
   <div id="pinSelezionato" class="center-pin" aria-hidden="true">
@@ -236,29 +182,14 @@
     </svg>
   </div>
 
-  <div class="zoom-control" aria-label="Controlli zoom mappa">
-    <button id="zoomOutButton" type="button" title="Riduci zoom">
-      −
-    </button>
-
-    <span id="zoomLabel" class="zoom-label">+4</span>
-
-    <button id="zoomInButton" type="button" title="Aumenta zoom">
-      +
-    </button>
-  </div>
-
   <script>
     const MY_MAPS_ID = "1bxno4JIrzoUtn1eHwdDXpsJCEUHvHi8";
-    const BASE_ZOOM = 14;
-    const MIN_ZOOM = 14;
-    const MAX_ZOOM = 21;
 
     const params = new URLSearchParams(window.location.search);
 
-    function parametro(nome, valorePredefinito = "") {
+    function parametro(nome, predefinito = "") {
       const valore = params.get(nome);
-      return valore !== null && valore !== "" ? valore : valorePredefinito;
+      return valore !== null && valore !== "" ? valore : predefinito;
     }
 
     let lat = parametro("lat");
@@ -267,7 +198,7 @@
     if (!lat || !lng) {
       const ll = parametro("ll");
 
-      if (ll && ll.includes(",")) {
+      if (ll.includes(",")) {
         const coordinate = ll.split(",");
         lat = coordinate[0].trim();
         lng = coordinate[1].trim();
@@ -278,64 +209,30 @@
     lng = lng || "8.547901";
 
     const id = parametro("id", "N/D");
-    const comune = parametro("comune", "Comune non disponibile");
-    const localita = parametro("localita", "");
-
-    let currentZoom = Number.parseInt(
-      parametro("zoom", parametro("z", "18")),
-      10
-    );
-
-    if (!Number.isFinite(currentZoom)) {
-      currentZoom = 18;
-    }
-
-    currentZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, currentZoom));
+    const zoom = parametro("zoom", parametro("z", "18"));
 
     const iframe = document.getElementById("mappa");
-    const zoomLabel = document.getElementById("zoomLabel");
-    const zoomOutButton = document.getElementById("zoomOutButton");
-    const zoomInButton = document.getElementById("zoomInButton");
+    const pin = document.getElementById("pinSelezionato");
+    const pinButton = document.getElementById("pinButton");
 
     document.getElementById("displayId").textContent = "ID: " + id;
-    document.getElementById("displayComune").textContent = comune;
 
-    if (localita) {
-      document.getElementById("displayLocalita").textContent = localita;
-    } else {
-      document.getElementById("displayLocalita").style.display = "none";
-    }
+    const urlMappa =
+      "https://www.google.com/maps/d/u/0/embed?mid=" +
+      encodeURIComponent(MY_MAPS_ID) +
+      "&ll=" +
+      encodeURIComponent(lat + "," + lng) +
+      "&z=" +
+      encodeURIComponent(zoom);
 
-    function aggiornaMappa() {
-      const url =
-        "https://www.google.com/maps/d/u/0/embed?mid=" +
-        encodeURIComponent(MY_MAPS_ID) +
-        "&ll=" +
-        encodeURIComponent(lat + "," + lng) +
-        "&z=" +
-        encodeURIComponent(currentZoom);
+    iframe.src = urlMappa;
 
-      iframe.src = url;
+    pinButton.addEventListener("click", function () {
+      const pinNascosto = pin.classList.toggle("hidden");
 
-      const relativo = currentZoom - BASE_ZOOM;
-      zoomLabel.textContent = relativo > 0 ? "+" + relativo : String(relativo);
-
-      zoomOutButton.disabled = currentZoom <= MIN_ZOOM;
-      zoomInButton.disabled = currentZoom >= MAX_ZOOM;
-    }
-
-    zoomInButton.addEventListener("click", function () {
-      if (currentZoom < MAX_ZOOM) {
-        currentZoom += 1;
-        aggiornaMappa();
-      }
-    });
-
-    zoomOutButton.addEventListener("click", function () {
-      if (currentZoom > MIN_ZOOM) {
-        currentZoom -= 1;
-        aggiornaMappa();
-      }
+      pinButton.textContent = pinNascosto
+        ? "MOSTRA PIN"
+        : "NASCONDI PIN";
     });
 
     document.getElementById("closeButton").addEventListener("click", function () {
@@ -345,8 +242,6 @@
         window.history.back();
       }, 150);
     });
-
-    aggiornaMappa();
   </script>
 </body>
 </html>
