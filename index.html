@@ -2,41 +2,68 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
+  <title>Consultazione Mappa</title>
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
   >
-  <title>CONCESSIONI IGEA S.p.A.</title>
 
   <style>
     :root {
       --header-height: 75px;
-      --header-color: #2c3e50;
-      --id-color: #f39c12;
-      --navigation-button-color: #34495e;
-      --close-button-color: #e74c3c;
     }
 
-    html,
-    body {
+    body,
+    html {
+      margin: 0;
+      padding: 0;
       width: 100%;
       height: 100%;
-      margin: 0;
       overflow: hidden;
-      background: #ffffff;
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
 
-    #mappa {
-      position: fixed;
-      inset: 0;
+    .map-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .map-iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      border: 0;
+      border: none;
+      pointer-events: none;
+    }
+
+    .glass-pane {
+      position: absolute;
+      top: var(--header-height);
+      left: 0;
+      z-index: 10;
+      width: 100%;
+      height: calc(100% - var(--header-height));
+      background: rgba(255, 255, 255, 0);
+    }
+
+    .center-pin {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 20;
+      width: 35px;
+      height: 35px;
+      pointer-events: none;
+      transform: translate(-50%, -100%);
+      filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.3));
     }
 
     .custom-header {
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       z-index: 100;
@@ -48,298 +75,299 @@
       height: var(--header-height);
       padding: 0 15px;
       color: #ffffff;
-      background: var(--header-color);
+      background-color: #2c3e50;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
     }
 
     .header-info {
       display: flex;
+      flex: 1 1 auto;
       flex-direction: column;
       min-width: 0;
-      max-width: 55vw;
+      max-width: 68%;
       line-height: 1.2;
     }
 
-    .info-id,
-    .info-concessione {
+    .info-id {
       overflow: hidden;
+      color: #f39c12;
+      font-size: 20px;
+      font-weight: bold;
       white-space: nowrap;
       text-overflow: ellipsis;
     }
 
-    .info-id {
-      color: var(--id-color);
-      font-size: 22px;
-      font-weight: 700;
+    .info-comune {
+      overflow: hidden;
+      font-size: 16px;
+      font-weight: normal;
+      white-space: nowrap;
+      text-overflow: ellipsis;
     }
 
-    .info-concessione {
-      margin-top: 3px;
-      color: #ffffff;
-      opacity: 0.92;
-      font-size: 14px;
+    .info-localita {
+      overflow: hidden;
+      font-size: 13px;
       font-style: italic;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      opacity: 0.8;
     }
 
     .header-actions {
       display: flex;
       flex: 0 0 auto;
       align-items: center;
-      gap: 10px;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-left: 10px;
     }
 
-    .header-btn {
-      padding: 9px 15px;
-      border: 0;
+    .navigation-btn,
+    .close-btn {
+      border: none;
       border-radius: 4px;
       color: #ffffff;
+      font-weight: bold;
       cursor: pointer;
-      font-size: 13px;
-      font-weight: 700;
       text-transform: uppercase;
-      white-space: nowrap;
-    }
-
-    .navigation-btn {
-      background: var(--navigation-button-color);
-    }
-
-    .navigation-btn:hover {
-      background: #1f2c38;
-    }
-
-    .close-btn {
-      background: var(--close-button-color);
-    }
-
-    .close-btn:hover {
-      background: #c0392b;
-    }
-
-    .header-btn:active {
-      transform: translateY(1px);
-    }
-
-    .center-pin {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      z-index: 50;
-      width: 40px;
-      height: 40px;
-      transform: translate(-50%, -100%);
-      pointer-events: none;
-      filter: drop-shadow(0 4px 3px rgba(0, 0, 0, 0.35));
-    }
-
-    .center-pin.hidden {
-      display: none;
-    }
-
-    .glass-pane {
-      position: fixed;
-      top: var(--header-height);
-      right: 0;
-      bottom: 0;
-      left: 0;
-      z-index: 60;
-      background: transparent;
+      transition: background-color 0.2s, transform 0.15s;
       pointer-events: auto;
     }
 
-    .glass-pane.unlocked {
+    .navigation-btn {
       display: none;
+      min-width: 112px;
+      padding: 8px 12px;
+      background-color: #2980b9;
+      font-size: 12px;
+      line-height: 1.1;
+      text-align: center;
+    }
+
+    .navigation-btn.is-unlocked {
+      background-color: #d35400;
+    }
+
+    .navigation-btn:hover {
+      background-color: #1f6a98;
+    }
+
+    .navigation-btn.is-unlocked:hover {
+      background-color: #a84300;
+    }
+
+    .close-btn {
+      padding: 8px 16px;
+      background-color: #e74c3c;
+      font-size: 14px;
+    }
+
+    .close-btn:hover {
+      background-color: #c0392b;
+    }
+
+    .navigation-btn:active,
+    .close-btn:active {
+      transform: translateY(1px);
+    }
+
+    .navigation-btn span {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+
+    .navigation-btn .nav-subtitle {
+      margin-top: 2px;
+      font-size: 10px;
+      letter-spacing: 0.15px;
     }
 
     @media (max-width: 768px) {
       :root {
-        --header-height: 62px;
+        --header-height: 78px;
       }
 
       .custom-header {
-        padding: 0 10px;
+        align-items: flex-start;
+        padding: 8px 10px;
       }
 
       .header-info {
-        max-width: 48vw;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: none;
+        padding-right: 8px;
       }
 
       .info-id {
         font-size: 18px;
       }
 
-      .info-concessione {
+      .info-comune {
+        overflow: hidden;
+        font-size: 14px;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+
+      .info-localita {
+        display: -webkit-box;
+        overflow: hidden;
         margin-top: 2px;
         font-size: 11px;
+        line-height: 1.15;
+        white-space: normal;
+        text-overflow: clip;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
       }
 
       .header-actions {
-        gap: 6px;
+        flex: 0 0 auto;
+        align-self: center;
+        gap: 0;
+        margin-left: 4px;
       }
 
-      .header-btn {
-        padding: 8px 9px;
-        font-size: 11px;
+      .navigation-btn {
+        display: flex;
+        flex: 0 0 78px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 78px;
+        min-height: 43px;
+        padding: 6px 5px;
+        font-size: 10px;
+        line-height: 1.08;
+        text-align: center;
+        white-space: normal;
+      }
+
+      .navigation-btn .nav-subtitle {
+        margin-top: 2px;
+        font-size: 9px;
+        letter-spacing: 0;
       }
 
       .close-btn {
-        display: none;
+        display: none !important;
       }
     }
   </style>
 </head>
 
 <body>
-  <iframe
-    id="mappa"
-    title="Mappa concessioni IGEA"
-    loading="eager"
-    allowfullscreen
-    referrerpolicy="strict-origin-when-cross-origin"
-  ></iframe>
+  <div class="map-container">
 
-  <header class="custom-header">
-    <div class="header-info">
-      <span id="displayId" class="info-id">ID: N/D</span>
-      <span id="displayConcessione" class="info-concessione"></span>
+    <div class="custom-header">
+      <div class="header-info">
+        <span class="info-id" id="displayId">ID: N/D</span>
+        <span class="info-comune" id="displayComune">Comune: N/D</span>
+        <span class="info-localita" id="displayLocalita">Località: N/D</span>
+      </div>
+
+      <div class="header-actions">
+        <button
+          class="navigation-btn"
+          id="navigationButton"
+          type="button"
+          aria-label="Sblocca navigazione"
+        >
+          <span id="navigationAction">SBLOCCA</span>
+          <span class="nav-subtitle">NAVIGAZIONE</span>
+        </button>
+
+        <button class="close-btn" id="closeButton" type="button">
+          CHIUDI
+        </button>
+      </div>
     </div>
 
-    <div class="header-actions">
-      <button
-        id="navigationButton"
-        class="header-btn navigation-btn"
-        type="button"
-      >
-        SBLOCCA NAVIGAZIONE
-      </button>
+    <div class="glass-pane" id="glassPane"></div>
 
-      <button
-        id="closeButton"
-        class="header-btn close-btn"
-        type="button"
-      >
-        CHIUDI
-      </button>
+    <div class="center-pin">
+      <svg viewBox="0 0 24 24" fill="#DB4437" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+      </svg>
     </div>
-  </header>
 
-  <div id="pinSelezionato" class="center-pin" aria-hidden="true">
-    <svg
-      viewBox="0 0 24 24"
-      fill="#DB4437"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"
-      />
-    </svg>
+    <iframe
+      id="googleMap"
+      class="map-iframe"
+      src=""
+      title="Mappa dell'immobile"
+    ></iframe>
+
   </div>
 
-  <div
-    id="glassPane"
-    class="glass-pane"
-    aria-label="Navigazione mappa bloccata"
-  ></div>
-
   <script>
-    const MY_MAPS_ID = "1bxno4JIrzoUtn1eHwdDXpsJCEUHvHi8";
+    const urlParams = new URLSearchParams(window.location.search);
 
-    const params = new URLSearchParams(window.location.search);
+    const lat = urlParams.get("lat") || "39.511889";
+    const lng = urlParams.get("lng") || "8.547901";
+    const idVal = urlParams.get("id") || "N/D";
+    const comuneVal = urlParams.get("comune") || "N/D";
+    const localitaVal = urlParams.get("localita") || "N/D";
+    const zoomVal = urlParams.get("zoom") || "18";
 
-    function parametro(nome, predefinito = "") {
-      const valore = params.get(nome);
-      return valore !== null && valore !== "" ? valore : predefinito;
-    }
+    window.history.replaceState(null, null, window.location.pathname);
 
-    let lat = parametro("lat");
-    let lng = parametro("lng");
+    const myMapsId = "1lQVisgwxED-JnABZDTxeDWWy5c52AdA";
+    const mapUrl =
+      `https://www.google.com/maps/d/embed?mid=${myMapsId}&ll=${lat},${lng}&z=${zoomVal}`;
 
-    if (!lat || !lng) {
-      const ll = parametro("ll");
-
-      if (ll.includes(",")) {
-        const coordinate = ll.split(",");
-        lat = coordinate[0].trim();
-        lng = coordinate[1].trim();
-      }
-    }
-
-    lat = lat || "39.511889";
-    lng = lng || "8.547901";
-
-    const id = parametro("id", "N/D");
-    const concessione = parametro("concessione", "");
-    const zoom = parametro("zoom", parametro("z", "18"));
-
-    const iframe = document.getElementById("mappa");
-    const pin = document.getElementById("pinSelezionato");
+    const googleMap = document.getElementById("googleMap");
     const glassPane = document.getElementById("glassPane");
     const navigationButton = document.getElementById("navigationButton");
-    const displayId = document.getElementById("displayId");
-    const displayConcessione = document.getElementById("displayConcessione");
+    const navigationAction = document.getElementById("navigationAction");
+    const closeButton = document.getElementById("closeButton");
 
-    let navigazioneSbloccata = false;
+    googleMap.src = mapUrl;
 
-    displayId.textContent = "ID: " + id;
+    document.getElementById("displayId").innerText = `ID: ${idVal}`;
+    document.getElementById("displayComune").innerText = comuneVal;
 
-    if (concessione.trim() !== "") {
-      displayConcessione.textContent = "Concessione: " + concessione;
+    if (localitaVal !== "N/D" && localitaVal.trim() !== "") {
+      document.getElementById("displayLocalita").innerText = localitaVal;
     } else {
-      displayConcessione.style.display = "none";
+      document.getElementById("displayLocalita").style.display = "none";
     }
 
-    function creaUrlMappa() {
-      return (
-        "https://www.google.com/maps/d/u/0/embed?mid=" +
-        encodeURIComponent(MY_MAPS_ID) +
-        "&ll=" +
-        encodeURIComponent(lat + "," + lng) +
-        "&z=" +
-        encodeURIComponent(zoom)
-      );
-    }
+    let navigationUnlocked = false;
 
-    function tornaAllaPosizioneIniziale() {
-      iframe.src = creaUrlMappa();
+    function aggiornaStatoNavigazione() {
+      if (navigationUnlocked) {
+        googleMap.style.pointerEvents = "auto";
+        glassPane.style.pointerEvents = "none";
+        navigationButton.classList.add("is-unlocked");
+        navigationAction.innerText = "BLOCCA";
+        navigationButton.setAttribute("aria-label", "Blocca navigazione");
+      } else {
+        googleMap.style.pointerEvents = "none";
+        glassPane.style.pointerEvents = "auto";
+        navigationButton.classList.remove("is-unlocked");
+        navigationAction.innerText = "SBLOCCA";
+        navigationButton.setAttribute("aria-label", "Sblocca navigazione");
+      }
     }
-
-    tornaAllaPosizioneIniziale();
 
     navigationButton.addEventListener("click", function () {
-      navigazioneSbloccata = !navigazioneSbloccata;
-
-      if (navigazioneSbloccata) {
-        glassPane.classList.add("unlocked");
-        pin.classList.add("hidden");
-        navigationButton.textContent = "BLOCCA NAVIGAZIONE";
-        glassPane.setAttribute(
-          "aria-label",
-          "Navigazione mappa sbloccata"
-        );
-      } else {
-        /*
-         * Ricarica l'iframe sul punto originario:
-         * coordinate e zoom passati dall'Action AppSheet.
-         */
-        tornaAllaPosizioneIniziale();
-
-        glassPane.classList.remove("unlocked");
-        pin.classList.remove("hidden");
-        navigationButton.textContent = "SBLOCCA NAVIGAZIONE";
-        glassPane.setAttribute(
-          "aria-label",
-          "Navigazione mappa bloccata"
-        );
-      }
+      navigationUnlocked = !navigationUnlocked;
+      aggiornaStatoNavigazione();
     });
 
-    document.getElementById("closeButton").addEventListener("click", function () {
+    closeButton.addEventListener("click", function () {
       window.close();
 
       setTimeout(function () {
         window.history.back();
-      }, 150);
+      }, 100);
     });
+
+    aggiornaStatoNavigazione();
   </script>
 </body>
 </html>
